@@ -1,7 +1,6 @@
 /**
   You need to create a HTTP server in Node.js which will handle the logic of an authentication server.
   - Don't need to use any database to store the data.
-
   - Save the users and their signup/login data in an array in a variable
   - You can store the passwords in plain text (as is) in the variable for now
 
@@ -30,8 +29,62 @@
  */
 
 const express = require("express")
-const PORT = 3000;
+const port = 3000;
 const app = express();
+const bodyParser = require('body-parser');
+
 // write your logic here, DONT WRITE app.listen(3000) when you're running tests, the tests will automatically start the server
+
+let list = [];
+
+app.use(bodyParser.json());
+
+
+app.post('/signup', (req,res)=>{
+    const reqBody = req.body;
+    let flag=true;
+    for(let i =0 ;i<list.length; i++){
+      if( list[i].username==reqBody.username ){
+        console.log("username already exist");
+        flag = false;
+        res.sendStatus(400);
+      }
+    }
+    if( flag == true){
+        const idd = list.length+1;
+        reqBody.id= idd;
+        list.push(reqBody);
+        console.log(JSON.stringify(reqBody));
+        res.sendStatus(200).json( { id : idd});
+    }
+});
+
+app.post('/login', (req,res)=>{
+    var reqBody = req.body;
+    let ans = null;
+    for( var i =0 ; i<list.length ; i++){
+      if( list[i].username == reqBody.username && list[i].password== reqBody.password){
+          flag = true;
+          ans = list[i];
+          break;
+      }
+    }
+    if( flag==false){
+      res.sendStatus(400);
+    }else{
+      res.json({
+        firstname : ans.firstname,
+        lastname : ans.lastname
+      });
+    }
+});
+
+app.get('/data', (req,res)=>{
+    res.json(list);
+});
+
+app.listen(port, ()=>{
+  console.log(`running at ${port}`);
+});
 
 module.exports = app;
